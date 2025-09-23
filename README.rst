@@ -1,14 +1,10 @@
-======================================
-Cookiecutter Idekerlab Python Package
-======================================
+=====================================================================
+Cookiecutter For Python Drug Recommender Engine
+=====================================================================
 
-Cookiecutter_ template for Idekerlab Python packages. This template includes
+Cookiecutter_ template for Drug Recommender Engine written in Python. This template includes
 a command line script and an example class under the ``runner`` module
 
-{% if is_open_source %}
-* Free software: {{ cookiecutter.open_source_license }}
-{% endif %}
-* Source code: https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}
 
 Features
 ---------
