@@ -4,7 +4,7 @@
     "github_username": "digitaltumors",
     "copyright": "The Regents of the University of California",
     "docker_owner": "{{ cookiecutter.github_username }}",
-    "project_name": "drptool",
+    "project_name": "Foo Drug Response Prediction Model",
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '').replace('-', '_') }}",
     "__runner_name": "{{ cookiecutter.project_slug }}cmd",
     "__error_class_name": "{{ cookiecutter.project_slug.replace('_','').capitalize() }}Error",

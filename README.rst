@@ -1,8 +1,8 @@
 =====================================================================
-Cookiecutter For Python Drug Recommender Engine
+Cookiecutter For Python Drug Response Prediction Model
 =====================================================================
 
-Cookiecutter_ template for Drug Recommender Engine written in Python. This template includes
+Cookiecutter_ template for Drug Response Prediction Model written in Python. This template includes
 a command line script and an example class under the ``runner`` module
 
 
