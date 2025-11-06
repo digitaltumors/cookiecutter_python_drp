@@ -5,6 +5,8 @@ import time
 import logging
 from cellmaps_utils import logutils
 from cellmaps_utils.provenance import ProvenanceUtil
+from dreutils.basecmdtool import BaseCommandLineTool
+
 from {{ cookiecutter.project_slug }}.exceptions import {{ cookiecutter.__error_class_name }}
 
 import {{ cookiecutter.project_slug }}
@@ -12,20 +14,16 @@ import {{ cookiecutter.project_slug }}
 logger = logging.getLogger(__name__)
 
 
-class {{ cookiecutter.__runner_class_name }}(object):
+class {{ cookiecutter.__runner_class_name }}(BaseCommandLineTool):
     """
     Class to run algorithm
     """
-    def __init__(self, outdir=None,
-                 exitcode=None,
-                 skip_logging=True,
-                 input_data_dict=None,
-                 provenance_utils=ProvenanceUtil()):
+    def __init__(self, theargs, provenance_utils=None):
         """
         Constructor
 
-        :param outdir: Directory to create and put results in
-        :type outdir: str
+        :param theargs: Arguments for constructor
+        :type theargs: dict
         :param skip_logging: If ``True`` skip logging, if ``None`` or ``False`` do NOT skip logging
         :type skip_logging: bool
         :param exitcode: value to return via :py:meth:`.{{ cookiecutter.__runner_class_name }}.run` method
@@ -37,19 +35,8 @@ class {{ cookiecutter.__runner_class_name }}(object):
                                  `RO-Crate <https://www.researchobject.org/ro-crate>`__ creation and population
         :type provenance_utils: :py:class:`~cellmaps_utils.provenance.ProvenanceUtil`
         """
-        if outdir is None:
-            raise {{ cookiecutter.__error_class_name }}('outdir is None')
-
-        self._outdir = os.path.abspath(outdir)
-        self._exitcode = exitcode
-        self._start_time = int(time.time())
-        if skip_logging is None:
-            self._skip_logging = False
-        else:
-            self._skip_logging = skip_logging
-        self._input_data_dict = input_data_dict
-        self._provenance_utils = provenance_utils
-
+        super().__init__(theargs,
+                         provenance_utils=provenance_utils)
         logger.debug('In constructor')
 
     def run(self):
@@ -62,25 +49,12 @@ class {{ cookiecutter.__runner_class_name }}(object):
         exitcode = 99
         try:
             logger.debug('In run method')
-            if os.path.isdir(self._outdir):
-                raise {{ cookiecutter.__error_class_name }}(self._outdir + ' already exists')
-            if not os.path.isdir(self._outdir):
-                os.makedirs(self._outdir, mode=0o755)
-            if self._skip_logging is False:
-                logutils.setup_filelogger(outdir=self._outdir,
-                                          handlerprefix='{{ cookiecutter.project_slug }}')
-            logutils.write_task_start_json(outdir=self._outdir,
-                                           start_time=self._start_time,
-                                           data={'commandlineargs': self._input_data_dict},
-                                           version={{ cookiecutter.project_slug }}.__version__)
+            self._initialize_rocrate()
+
+            # Perform processing here
 
             # set exit code to value passed in via constructor
-            exitcode = self._exitcode
+            exitcode = self._theargs['exitcode']
+            return exitcode
         finally:
-            # write a task finish file
-            logutils.write_task_finish_json(outdir=self._outdir,
-                                            start_time=self._start_time,
-                                            status=exitcode)
-
-
-        return exitcode
+            self._write_task_finish(exitcode)

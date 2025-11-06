@@ -26,7 +26,29 @@ def _parse_arguments(desc, args):
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=constants.ArgParseFormatter)
     parser.add_argument('outdir',
-                        help='Directory to write results to')
+                        help='Directory to write results to as an RO-Crate')
+    # RO-Crate input directory (optional to satisfy unit tests; validated at runtime)
+    parser.add_argument('--input_rocrate', '--input_crate', required=False, default=None,
+                        help='Absolute or relative path to the input RO-Crate. '
+                             'For train and optimizetrain this is a training '
+                             'crate; for test/predict it is a testing crate. '
+                             'The flag name is fixed to --input_crate so the '
+                             'benchmark launcher can invoke all models '
+                             'uniformly')
+    parser.add_argument('--mode', default='test', choices=['train', 'test',
+                                                           'predict', 'optimizetrain'],
+                        help='Selects the execution flow. train is responsible '
+                             'for training the model, test and predict are '
+                             'synonyms and are responsible for making '
+                             'prediction. optimizetrain triggers '
+                             'hyperparameter optimization prior to '
+                             'training')
+    parser.add_argument('--model', help="Path to model file or model RO-Crate")
+    parser.add_argument('--config_file',
+                        help='Path to an algorithm-specific configuration file. '
+                             'Implementations MAY ignore the flag when they do not '
+                             'support external configuration and MUST preserve '
+                             'existing defaults when the flag is omitted')
     parser.add_argument('--logconf', default=None,
                         help='Path to python logging configuration file in '
                              'this format: https://docs.python.org/3/library/'
@@ -75,10 +97,7 @@ def main(args):
 
     try:
         logutils.setup_cmd_logging(theargs)
-        return {{ cookiecutter.__runner_class_name }}(outdir=theargs.outdir,
-                                                      exitcode=theargs.exitcode,
-                                                      skip_logging=theargs.skip_logging,
-                                                      input_data_dict=theargs.__dict__).run()
+        return {{ cookiecutter.__runner_class_name }}(vars(theargs)).run()
     except Exception as e:
         logger.exception('Caught exception: ' + str(e))
         return 2
