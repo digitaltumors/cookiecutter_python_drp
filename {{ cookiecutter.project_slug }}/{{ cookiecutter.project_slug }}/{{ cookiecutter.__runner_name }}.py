@@ -6,6 +6,8 @@ import logging
 import logging.config
 from cellmaps_utils import logutils
 from cellmaps_utils import constants
+import aixport.constants
+
 import {{ cookiecutter.project_slug }}
 from {{ cookiecutter.project_slug }}.runner import {{ cookiecutter.__runner_class_name }}
 
@@ -27,21 +29,34 @@ def _parse_arguments(desc, args):
                                      formatter_class=constants.ArgParseFormatter)
     parser.add_argument('outdir',
                         help='Directory to write results to as an RO-Crate')
-    # RO-Crate input directory (optional to satisfy unit tests; validated at runtime)
-    parser.add_argument('--input_rocrate', '--input_crate', required=False, default=None,
+    # RO-Crate input directory (optional to satisfy unit tests;
+    # validated at runtime)
+    parser.add_argument('--input_rocrate', '--input_crate',
+                        required=False, default=None,
                         help='Absolute or relative path to the input RO-Crate. '
-                             'For train and optimizetrain this is a training '
-                             'crate; for test/predict it is a testing crate. '
+                             'For ' + aixport.constants.TRAIN_MODE + ' and ' +
+                             aixport.constants.OPTIMIZETRAIN_MODE + ' this is a training '
+                             'crate; for ' + aixport.constants.TEST_MODE +
+                             '/' + aixport.constants.PREDICT_MODE +
+                             ' it is a testing crate. '
                              'The flag name is fixed to --input_crate so the '
                              'benchmark launcher can invoke all models '
                              'uniformly')
-    parser.add_argument('--mode', default='test', choices=['train', 'test',
-                                                           'predict', 'optimizetrain'],
-                        help='Selects the execution flow. train is responsible '
-                             'for training the model, test and predict are '
+    parser.add_argument('--mode', default='test', choices=[
+                        aixport.constants.TRAIN_MODE,
+                        aixport.constants.TEST_MODE,
+                        aixport.constants.PREDICT_MODE,
+                        aixport.constants.OPTIMIZETRAIN_MODE],
+                        help='Selects the execution flow. ' +
+                             aixport.constants.TRAIN_MODE +
+                             ' is responsible '
+                             'for training the model, ' +
+                             aixport.constants.TEST_MODE +
+                             '/' + aixport.constants.PREDICT_MODE + ' are '
                              'synonyms and are responsible for making '
-                             'prediction. optimizetrain triggers '
-                             'hyperparameter optimization prior to '
+                             'prediction. ' +
+                             aixport.constants.OPTIMIZETRAIN_MODE +
+                             ' triggers hyperparameter optimization prior to '
                              'training')
     parser.add_argument('--model', help="Path to model file or model RO-Crate")
     parser.add_argument('--config_file',
@@ -55,8 +70,6 @@ def _parse_arguments(desc, args):
                              'logging.config.html#logging-config-fileformat '
                              'Setting this overrides -v parameter which uses '
                              ' default logger. (default None)')
-    parser.add_argument('--exitcode', help='Exit code this command will return',
-                        default=0, type=int)
     parser.add_argument('--skip_logging', action='store_true',
                         help='If set, output.log, error.log '
                              'files will not be created')

@@ -6,6 +6,7 @@
 import os
 import tempfile
 import shutil
+import aixport.constants
 
 {% if cookiecutter.use_pytest == 'y' -%}
 import pytest
@@ -48,16 +49,17 @@ class Test{{ cookiecutter.project_slug|title }}(unittest.TestCase):
 
         self.assertEqual('dir', res.outdir)
         self.assertEqual(1, res.verbose)
-        self.assertEqual(0, res.exitcode)
+        self.assertEqual(aixport.constants.TEST_MODE, res.mode)
         self.assertEqual(None, res.logconf)
 
-        someargs = ['dir', '-vv', '--logconf', 'hi', '--exitcode', '3']
+        someargs = ['dir', '-vv', '--logconf', 'hi', '--mode',
+                    aixport.constants.OPTIMIZETRAIN_MODE]
         res = {{cookiecutter.__runner_name}}._parse_arguments('hi', someargs)
 
         self.assertEqual('dir', res.outdir)
         self.assertEqual(3, res.verbose)
         self.assertEqual('hi', res.logconf)
-        self.assertEqual(3, res.exitcode)
+        self.assertEqual(aixport.constants.OPTIMIZETRAIN_MODE, res.mode)
 
 
     def test_main(self):
