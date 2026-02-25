@@ -103,3 +103,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# ignore the dnanexus tarball
+{{cookiecutter.project_slug}}.tar.gz
