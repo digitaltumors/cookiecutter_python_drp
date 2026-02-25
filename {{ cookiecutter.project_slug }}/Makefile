@@ -1,6 +1,20 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
 
+# 1. Find all source files in the platform directory
+MD_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/*.md)
+SH_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/src/*.sh)
+PY_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/test/*.py)
+
+# 2. Convert source paths to build paths
+MD_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/%.md, build/{{cookiecutter.project_slug}}/%.md, $(MD_SOURCES))
+SH_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/src/%.sh, build/{{cookiecutter.project_slug}}/src/%.sh, $(SH_SOURCES))
+PY_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/test/%.py, build/{{cookiecutter.project_slug}}/test/%.py, $(PY_SOURCES))
+
+# Python files
+PY_DEPS := $(wildcard {{cookiecutter.project_slug}}/*.py) setup.py requirements.txt pyproject.toml
+
+
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 
@@ -92,6 +106,37 @@ install: clean ## install the package to the active Python's site-packages
 dockerbuild: ## build docker image and store in local repository
 	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
 	docker build -t {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -f docker/Dockerfile .
+
+dockerpush: ## push image to dockerhub
+	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
+	docker push {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv
+
+build/{{cookiecutter.project_slug}}/py.changed: $(PY_DEPS) ## Touches a file to trigger rebuild
+	@mkdir -p `dirname $@`
+	@touch $@
+
+build/{{cookiecutter.project_slug}}/resources/{{cookiecutter.project_slug}}.tar.gz: build/{{cookiecutter.project_slug}}/py.changed ## Builds {{cookiecutter.project_slug}} Docker Container file
+	@mkdir -p `dirname $@`
+	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
+	docker build -t {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -f docker/Dockerfile .; \
+	docker save {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -o $@
+
+build/{{cookiecutter.project_slug}}/dxapp.json: platforms/dnanexus/{{cookiecutter.project_slug}}/dxapp.json ## Builds dxapp.json with version
+	@mkdir -p `dirname $@`
+	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
+	cat $< | sed "s/@@VERSION@@/$$cv/g" > $@
+
+build/{{cookiecutter.project_slug}}/test/%.py: platforms/dnanexus/{{cookiecutter.project_slug}}/test/%.py ## Builds test files with version
+	@mkdir -p `dirname $@`
+	@cp $< $@
+
+build/{{cookiecutter.project_slug}}/%.md: platforms/dnanexus/{{cookiecutter.project_slug}}/%.md ## Builds markdown files
+	@mkdir -p `dirname $@`
+	@cp $< $@
+
+applet: build/{{cookiecutter.project_slug}}/resources/{{cookiecutter.project_slug}}.tar.gz \
+        build/{{cookiecutter.project_slug}}/dxapp.json \
+		$(MD_TARGETS) $(SH_TARGETS) $(PY_TARGETS) ## Builds the DNAnexus applet
 
 dockerpush: ## push image to dockerhub
 	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
