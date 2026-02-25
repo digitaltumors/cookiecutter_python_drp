@@ -103,14 +103,6 @@ dist: clean ## builds source and wheel package
 install: clean ## install the package to the active Python's site-packages
 	python -m pip install .
 
-dockerbuild: ## build docker image and store in local repository
-	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
-	docker build -t {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -f docker/Dockerfile .
-
-dockerpush: ## push image to dockerhub
-	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
-	docker push {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv
-
 build/{{cookiecutter.project_slug}}/py.changed: $(PY_DEPS) ## Touches a file to trigger rebuild
 	@mkdir -p `dirname $@`
 	@touch $@
@@ -126,6 +118,10 @@ build/{{cookiecutter.project_slug}}/dxapp.json: platforms/dnanexus/{{cookiecutte
 	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
 	cat $< | sed "s/@@VERSION@@/$$cv/g" > $@
 
+build/{{cookiecutter.project_slug}}/src/%.sh: platforms/dnanexus/{{cookiecutter.project_slug}}/src/%.sh ## Builds test files with version
+	@mkdir -p `dirname $@`
+	@cp $< $@
+
 build/{{cookiecutter.project_slug}}/test/%.py: platforms/dnanexus/{{cookiecutter.project_slug}}/test/%.py ## Builds test files with version
 	@mkdir -p `dirname $@`
 	@cp $< $@
@@ -137,7 +133,3 @@ build/{{cookiecutter.project_slug}}/%.md: platforms/dnanexus/{{cookiecutter.proj
 applet: build/{{cookiecutter.project_slug}}/resources/{{cookiecutter.project_slug}}.tar.gz \
         build/{{cookiecutter.project_slug}}/dxapp.json \
 		$(MD_TARGETS) $(SH_TARGETS) $(PY_TARGETS) ## Builds the DNAnexus applet
-
-dockerpush: ## push image to dockerhub
-	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
-	docker push {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv

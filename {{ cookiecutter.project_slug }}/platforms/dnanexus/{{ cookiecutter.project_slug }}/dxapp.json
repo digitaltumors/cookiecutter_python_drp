@@ -1,7 +1,7 @@
 {
-  "name": "elasticnet_drp",
-  "title": "Elastic Net Drug Response Prediction",
-  "summary": "Runs Elastic Net Drug Response Prediction Model",
+  "name": "{{ cookiecutter.project_slug }}",
+  "title": "{{ cookiecutter.project_name }}",
+  "summary": "Runs {{ cookiecutter.project_short_description }}",
   "dxapi": "1.0.0",
   "version": "@@VERSION@@",
   "inputSpec": [
