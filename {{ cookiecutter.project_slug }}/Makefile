@@ -2,14 +2,14 @@
 .DEFAULT_GOAL := help
 
 # 1. Find all source files in the platform directory
-MD_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/*.md)
-SH_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/src/*.sh)
-PY_SOURCES := $(wildcard platforms/dnanexus/{{cookiecutter.project_slug}}/test/*.py)
+MD_SOURCES := $(wildcard dnanexus/{{cookiecutter.project_slug}}/*.md)
+SH_SOURCES := $(wildcard dnanexus/{{cookiecutter.project_slug}}/src/*.sh)
+PY_SOURCES := $(wildcard dnanexus/{{cookiecutter.project_slug}}/test/*.py)
 
 # 2. Convert source paths to build paths
-MD_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/%.md, build/{{cookiecutter.project_slug}}/%.md, $(MD_SOURCES))
-SH_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/src/%.sh, build/{{cookiecutter.project_slug}}/src/%.sh, $(SH_SOURCES))
-PY_TARGETS := $(patsubst platforms/dnanexus/{{cookiecutter.project_slug}}/test/%.py, build/{{cookiecutter.project_slug}}/test/%.py, $(PY_SOURCES))
+MD_TARGETS := $(patsubst dnanexus/{{cookiecutter.project_slug}}/%.md, build/{{cookiecutter.project_slug}}/%.md, $(MD_SOURCES))
+SH_TARGETS := $(patsubst dnanexus/{{cookiecutter.project_slug}}/src/%.sh, build/{{cookiecutter.project_slug}}/src/%.sh, $(SH_SOURCES))
+PY_TARGETS := $(patsubst dnanexus/{{cookiecutter.project_slug}}/test/%.py, build/{{cookiecutter.project_slug}}/test/%.py, $(PY_SOURCES))
 
 # Python files
 PY_DEPS := $(wildcard {{cookiecutter.project_slug}}/*.py) setup.py requirements.txt pyproject.toml
@@ -50,7 +50,7 @@ clean-build: ## remove build artifacts
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+	find . -name '*.egg' -exec rm -fr {} +
 
 clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
@@ -113,20 +113,20 @@ build/{{cookiecutter.project_slug}}/resources/{{cookiecutter.project_slug}}.tar.
 	docker build -t {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -f docker/Dockerfile .; \
 	docker save {{cookiecutter.docker_owner}}/{{cookiecutter.project_slug}}:$$cv -o $@
 
-build/{{cookiecutter.project_slug}}/dxapp.json: platforms/dnanexus/{{cookiecutter.project_slug}}/dxapp.json ## Builds dxapp.json with version
+build/{{cookiecutter.project_slug}}/dxapp.json: dnanexus/{{cookiecutter.project_slug}}/dxapp.json ## Builds dxapp.json with version
 	@mkdir -p `dirname $@`
 	@cv=`grep '__version__' {{cookiecutter.project_slug}}/__init__.py | sed "s/^.*= *'//" | sed "s/'.*//"`; \
 	cat $< | sed "s/@@VERSION@@/$$cv/g" > $@
 
-build/{{cookiecutter.project_slug}}/src/%.sh: platforms/dnanexus/{{cookiecutter.project_slug}}/src/%.sh ## Builds test files with version
+build/{{cookiecutter.project_slug}}/src/%.sh: dnanexus/{{cookiecutter.project_slug}}/src/%.sh ## Builds test files with version
 	@mkdir -p `dirname $@`
 	@cp $< $@
 
-build/{{cookiecutter.project_slug}}/test/%.py: platforms/dnanexus/{{cookiecutter.project_slug}}/test/%.py ## Builds test files with version
+build/{{cookiecutter.project_slug}}/test/%.py: dnanexus/{{cookiecutter.project_slug}}/test/%.py ## Builds test files with version
 	@mkdir -p `dirname $@`
 	@cp $< $@
 
-build/{{cookiecutter.project_slug}}/%.md: platforms/dnanexus/{{cookiecutter.project_slug}}/%.md ## Builds markdown files
+build/{{cookiecutter.project_slug}}/%.md: dnanexus/{{cookiecutter.project_slug}}/%.md ## Builds markdown files
 	@mkdir -p `dirname $@`
 	@cp $< $@
 
